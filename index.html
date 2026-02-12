@@ -3,70 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matt's Hytale Mod Showcase</title>
+    <title>Matt's Hytale Mod</title>
     <style>
-        /* --- DARK THEATER MODE CSS --- */
+        /* --- BACKGROUND & LAYOUT --- */
         body {
             margin: 0;
             padding: 0;
-            background-color: #0d0d0d; /* Almost black */
-            color: #ffffff;
-            font-family: 'Segoe UI', sans-serif;
+            height: 100vh; /* Full screen height */
+            overflow: hidden; /* Prevent scrolling */
+            
+            /* The Background Image */
+            background-image: url('bg.jpeg');
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover; /* Stretches image to fill screen */
+            background-color: #000; /* Fallback color */
+            
+            /* Centering the Video */
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Takes up full screen height */
         }
 
-        h1 {
-            margin-bottom: 20px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            color: #4CAF50; /* Hytale Green accent */
-        }
-
+        /* --- VIDEO PLAYER --- */
         video {
-            width: 80%;       /* Responsive width */
-            max-width: 960px; /* Don't get too huge on big monitors */
-            border-radius: 8px;
-            box-shadow: 0 0 30px rgba(76, 175, 80, 0.2); /* Subtle green glow */
-            border: 1px solid #333;
+            width: 80%;       
+            max-width: 1000px;
+            
+            /* Styling to make it pop off the background */
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); /* Heavy shadow */
+            border: 1px solid rgba(255,255,255,0.2); /* Subtle border */
             background-color: #000;
-        }
-
-        .footer-links {
-            margin-top: 30px;
-            font-size: 0.9rem;
-        }
-
-        a {
-            color: #888;
-            text-decoration: none;
-            margin: 0 15px;
-            transition: color 0.3s;
-        }
-
-        a:hover {
-            color: #fff;
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <h1>HYTALE WORKBENCH PREVIEW</h1>
-
     <video controls autoplay muted>
         <source src="hello.mp4" type="video/mp4">
-        Your browser does not support the video tag.
     </video>
-
-    <div class="footer-links">
-        <a href="#">Download Mod</a>
-        <a href="#">GitHub Repo</a>
-        <a href="#">Discord</a>
-    </div>
 
 </body>
 </html>
