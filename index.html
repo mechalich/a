@@ -3,189 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matt's Hytale Mods</title>
+    <title>Matt's Hytale Mod Showcase</title>
     <style>
-        /* --- RESET & BASICS --- */
-        * {
-            box-sizing: border-box;
+        /* --- DARK THEATER MODE CSS --- */
+        body {
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212; /* Very dark grey background */
-            color: #e0e0e0; /* Off-white text */
-            line-height: 1.6;
+            background-color: #0d0d0d; /* Almost black */
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-            transition: 0.3s;
-        }
-
-        /* --- LAYOUT UTILITIES --- */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-        }
-
-        /* --- HERO SECTION --- */
-        header {
-            padding: 60px 20px;
-            background: linear-gradient(135deg, #1e1e1e 0%, #252525 100%);
-            border-bottom: 2px solid #333;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Takes up full screen height */
         }
 
         h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            color: #4CAF50; /* Hytale-ish Green */
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        p.subtitle {
-            font-size: 1.2rem;
-            color: #aaa;
-            margin-bottom: 30px;
-        }
-
-        /* --- DOWNLOAD BUTTON --- */
-        .btn-download {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 5px;
-            border: 2px solid #4CAF50;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        .btn-download:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0,0,0,0.4);
-        }
-
-        /* --- FEATURES SECTION --- */
-        .features {
-            padding: 50px 20px;
-            background-color: #181818;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .feature-card {
-            background-color: #222;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-
-        .feature-card h3 {
-            color: #fff;
-            margin-bottom: 10px;
-        }
-
-        /* --- SOCIALS / FOOTER --- */
-        footer {
-            margin-top: auto;
-            padding: 40px 20px;
-            background-color: #0e0e0e;
-            border-top: 1px solid #333;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
             margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #4CAF50; /* Hytale Green accent */
         }
 
-        .social-btn {
-            background-color: #333;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: bold;
+        video {
+            width: 80%;       /* Responsive width */
+            max-width: 960px; /* Don't get too huge on big monitors */
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.2); /* Subtle green glow */
+            border: 1px solid #333;
+            background-color: #000;
+        }
+
+        .footer-links {
+            margin-top: 30px;
             font-size: 0.9rem;
         }
 
-        .social-btn:hover {
-            background-color: #555;
-            color: #fff;
+        a {
+            color: #888;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s;
         }
 
-        /* Specific Colors for Socials */
-        .discord:hover { background-color: #5865F2; }
-        .youtube:hover { background-color: #FF0000; }
-        .github:hover  { background-color: #333; border: 1px solid #fff; }
-
+        a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="container">
-            <h1>Hytale Workbench</h1>
-            <p class="subtitle">A custom server plugin and lightweight IDE for the Hytale enthusiast.</p>
-            
-            <a href="#" class="btn-download">Download Latest Version (v1.0)</a>
-            
-            <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">
-                Requires: Java 21 • Compatible with Ubuntu & Windows
-            </p>
-        </div>
-    </header>
+    <h1>HYTALE WORKBENCH PREVIEW</h1>
 
-    <section class="features">
-        <div class="container">
-            <h2>Mod Features</h2>
-            <div class="feature-grid">
-                
-                <div class="feature-card">
-                    <h3>🚀 Agentic Integration</h3>
-                    <p>Includes experimental support for Gemini AI commands directly within the server console.</p>
-                </div>
+    <video controls autoplay muted>
+        <source src="hello.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
 
-                <div class="feature-card">
-                    <h3>💬 Discord Relay</h3>
-                    <p>Seamless two-way chat between your Hytale server and your Discord community.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>⚡ Optimized Performance</h3>
-                    <p>Built with lightweight Java code to ensure minimal impact on server TPS.</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <h3>Connect with Me</h3>
-            <div class="social-links">
-                <a href="#" class="social-btn discord">Join Discord</a>
-                <a href="#" class="social-btn youtube">YouTube Channel</a>
-                <a href="#" class="social-btn github">GitHub Profile</a>
-            </div>
-            <p style="font-size: 0.8rem; color: #555;">&copy; 2026 Matthew Leland Gray. All rights reserved.</p>
-        </div>
-    </footer>
+    <div class="footer-links">
+        <a href="#">Download Mod</a>
+        <a href="#">GitHub Repo</a>
+        <a href="#">Discord</a>
+    </div>
 
 </body>
 </html>
