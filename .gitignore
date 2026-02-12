@@ -1,6 +1,9 @@
 # Compiled class file
 *.class
 
+# My custom upload script
+upload.sh
+
 # Log files
 *.log
 
