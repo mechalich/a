@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A curated reading list of cosmic horror, espionage, and the Cthulhu Mythos.">
+    <title>Spoop!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Outfit:wght@300;400;500&display=swap');
+
+        :root {
+            --primary-color: #d4af37;
+            /* tarnished gold */
+            --accent-color: #9e1b1b;
+            /* deep blood red */
+            --bg-glass: rgba(18, 18, 22, 0.75);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Outfit', sans-serif;
+            background: #0f1014 url('fireside.jpeg') no-repeat center center fixed;
+            /* Ensure the image is named fireside.jpeg in the same directory */
+            background-size: cover;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Subtle dark gradient overlay to ensure text contrast over any background */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(10, 10, 15, 0.4) 0%, rgba(20, 10, 15, 0.2) 100%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 8vh auto;
+            padding: 50px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 50px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            letter-spacing: 3px;
+        }
+
+        .book-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .book-item {
+            position: relative;
+            padding: 30px 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 0 16px 16px 0;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        .book-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .book-item:hover {
+            transform: translateX(12px) scale(1.01);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: -8px 15px 30px rgba(0, 0, 0, 0.4);
+            border-left-color: #ff3b3b;
+        }
+
+        .book-item:hover::before {
+            opacity: 1;
+        }
+
+        .book-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 8px 0;
+            display: block;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .author {
+            font-style: italic;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .description {
+            line-height: 1.7;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+            font-weight: 300;
+        }
+
+        /* Micro-animations for list loading */
+        .book-item {
+            opacity: 0;
+            animation: fadeInItem 0.6s ease forwards;
+        }
+
+        .book-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .book-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .book-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .book-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .book-item:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .book-item:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        .book-item:nth-child(7) {
+            animation-delay: 0.7s;
+        }
+
+        .book-item:nth-child(8) {
+            animation-delay: 0.8s;
+        }
+
+        .book-item:nth-child(9) {
+            animation-delay: 0.9s;
+        }
+
+        .book-item:nth-child(10) {
+            animation-delay: 1.0s;
+        }
+
+        .book-item:nth-child(11) {
+            animation-delay: 1.1s;
+        }
+
+        .book-item:nth-child(12) {
+            animation-delay: 1.2s;
+        }
+
+        .book-item:nth-child(13) {
+            animation-delay: 1.3s;
+        }
+
+        .book-item:nth-child(14) {
+            animation-delay: 1.4s;
+        }
+
+        .book-item:nth-child(15) {
+            animation-delay: 1.5s;
+        }
+
+        .book-item:nth-child(16) {
+            animation-delay: 1.6s;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInItem {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .container {
+                margin: 20px;
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .book-item {
+                padding: 20px;
+            }
+
+            .book-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Library of Doom</h1>
+        <ul class="book-list">
+            <li class="book-item">
+                <span class="book-title">Delta Green: Denied to the Enemy</span>
+                <span class="author">by Dennis Detwiller</span>
+                <p class="description">Set during World War II, this novel explores the early, bloody days of Delta
+                    Green as they race against the Nazi occult organization Karotechia to secure unnatural and
+                    terrifying cosmic powers.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">The Laundry Files</span>
+                <span class="author">by Charles Stross</span>
+                <p class="description">A bit more bureaucratic and darkly comedic, focusing on a secret British
+                    intelligence agency dealing with Lovecraftian horrors, occult math, and world-ending entities.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: The Rules of Engagement</span>
+                <span class="author">by John Scott Tynes</span>
+                <p class="description">An agent's disappearance pulls a Delta Green team into a vortex of horror in this
+                    techno-thriller novel. The secrets they uncover threaten to ignite an all-out war between the Delta
+                    Green conspiracy and its bitterest rival government faction, Majestic-12. (Note: This is often
+                    published as part of the "Strange Authorities" collection).</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">The Joe Ledger Series</span>
+                <span class="author">by Jonathan Maberry</span>
+                <p class="description">Follows a detective who gets recruited into a secret government tier called the
+                    Department of Military Sciences (DMS) to fight weaponized paranormal threats, including Lovecraftian
+                    monsters.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: Through a Glass, Darkly</span>
+                <span class="author">by Dennis Detwiller</span>
+                <p class="description">A direct continuation of the overarching plotline, this novel explores the
+                    violent collapse of the secretive Majestic-12 organization and the rise of the new, modernized Delta
+                    Green as hidden truths come to light.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">SEAL Team 666</span>
+                <span class="author">by Weston Ochse</span>
+                <p class="description">Exactly what it sounds like—Navy SEALs tasked with taking down demons, cults, and
+                    supernatural monsters.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: Alien Intelligence</span>
+                <span class="author">Edited by Bob Kruger and John Tynes</span>
+                <p class="description">The original collection of short stories that kicked off the fiction line,
+                    featuring various authors exploring the intersection of 1990s government cover-ups, rogue
+                    operations, and Lovecraftian horror.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: Dark Theatres</span>
+                <span class="author">Edited by John Tynes</span>
+                <p class="description">The second anthology of short stories, expanding the universe with more tales of
+                    intelligence agencies and military personnel confronting unspeakable cosmic threats that regular
+                    citizens are blissfully unaware of.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: Strange Authorities</span>
+                <span class="author">by John Scott Tynes</span>
+                <p class="description">A collection that compiles Tynes' interconnected short stories (like The Corn
+                    King) along with his full-length novel The Rules of Engagement into one cohesive, espionage-heavy
+                    volume.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: Tales from Failed Anatomies</span>
+                <span class="author">by Dennis Detwiller</span>
+                <p class="description">A haunting, highly praised collection of short stories written entirely by one of
+                    the game's co-creators, covering the massive sweep of the conspiracy's dark history from the 1920s
+                    into the near future.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: Extraordinary Renditions</span>
+                <span class="author">Edited by Shane Ivey</span>
+                <p class="description">A collection of short stories written by various authors that pushes the Delta
+                    Green timeline forward into the modern, post-9/11 War on Terror era of the 2010s.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">Delta Green: The Way It Went Down (Volumes 1 & 2)</span>
+                <span class="author">by Dennis Detwiller</span>
+                <p class="description">Collections of very brief, rapid-fire vignettes and flash-fiction stories
+                    detailing the grim, clinical, and often fatal day-to-day operations of Delta Green agents.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">The works of Clark Ashton Smith</span>
+                <span class="author">Various</span>
+                <p class="description">He was a close pen-pal of Lovecraft and wrote the Hyperborean cycle, a series of
+                    stories set in a doomed, prehistoric, magic-filled continent (Hyperborea). His style was more
+                    poetic, heavily fantasy-driven, and slightly more sardonic than Lovecraft's. He also created the
+                    popular toad-god "Tsathoggua," which Lovecraft loved so much he borrowed it for his own Cthulhu
+                    Mythos.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">The works of Robert E. Howard</span>
+                <span class="author">Various</span>
+                <p class="description">Best known for creating Conan the Barbarian, Howard was the third pillar of the
+                    Weird Tales "Big Three" alongside Lovecraft and Smith. He frequently corresponded with Lovecraft and
+                    contributed several core elements to the early Cthulhu Mythos, often blending cosmic horror with his
+                    signature pulse-pounding, pulp-action sword and sorcery.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">The works of August Derleth</span>
+                <span class="author">Various</span>
+                <p class="description">While not part of the original "Big Three," Derleth is the author most famously
+                    inspired by Lovecraft. In fact, he is the one who actually coined the term "Cthulhu Mythos"
+                    (Lovecraft himself jokingly called it "Yog-Sothothery"). After Lovecraft died, Derleth founded a
+                    publishing company specifically to keep his friend's work in print and wrote dozens of his own
+                    stories expanding on Lovecraft's universe.</p>
+            </li>
+            <li class="book-item">
+                <span class="book-title">The works of Robert Bloch</span>
+                <span class="author">Various</span>
+                <p class="description">He eventually became famous for writing the novel Psycho, but he started his
+                    career as a teenager writing Cthulhu Mythos stories as Lovecraft's protégé!</p>
+            </li>
+        </ul>
+    </div>
+
+</body>
+
+</html>
