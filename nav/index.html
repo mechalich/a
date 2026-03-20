@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0e0e0e"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>NEURAL_CONDUIT</title>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --surface-lowest: #0e0e0e;
+  --surface: #131313;
+  --surface-container-low: #1c1b1b;
+  --surface-container: #201f1f;
+  --surface-container-high: #2a2a2a;
+  --surface-container-highest: #353534;
+  --surface-bright: #3a3939;
+  --on-surface: #e5e2e1;
+  --on-surface-variant: #e3beb8;
+  --primary: #ffb4ac;
+  --primary-container: #89070e;
+  --on-primary-container: #ff9085;
+  --secondary: #c7c6c6;
+  --outline: #aa8984;
+  --outline-variant: #5a403c;
+  --error: #ffb4ab;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface-lowest);
+  color: var(--on-surface);
+  font-family: 'Inter', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block; line-height: 1; text-transform: none;
+  letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr;
+}
+
+/* ── VIEWS ── */
+.view { display: none; position: absolute; inset: 0; }
+.view.active { display: flex; flex-direction: column; }
+
+/* ── CAMERA / AR VIEW ── */
+#camera-view {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+}
+#camera-feed {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+#ar-overlay {
+  position: absolute; inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── HUD ── */
+.hud-top {
+  position: absolute; top: 0; left: 0; right: 0;
+  z-index: 10;
+  padding: 12px 20px;
+  background: linear-gradient(to bottom, rgba(14,14,14,0.85) 0%, transparent 100%);
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.hud-bottom {
+  position: absolute; bottom: 80px; left: 0; right: 0;
+  z-index: 10;
+  padding: 16px 20px;
+  background: linear-gradient(to top, rgba(14,14,14,0.85) 0%, transparent 100%);
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+
+.hud-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.hud-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 42px; font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--secondary);
+  font-style: italic;
+  line-height: 1;
+}
+.hud-unit {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px; font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-left: 6px;
+}
+.hud-sublabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 8px; font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--on-surface-variant);
+  margin-top: 4px;
+}
+
+/* Signal lock bar */
+.signal-bar { height: 3px; width: 80px; background: var(--surface-container-highest); margin-top: 4px; overflow: hidden; }
+.signal-bar-fill { height: 100%; background: var(--primary); transition: width 0.5s ease; }
+
+/* ── RETICLE ── */
+.reticle {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px; height: 120px;
+  z-index: 5; pointer-events: none;
+}
+.reticle-ring {
+  position: absolute; inset: 0;
+  border: 1px solid rgba(137,7,14,0.3);
+  border-radius: 50%;
+}
+.reticle-cross-h {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px; height: 2px;
+  background: var(--primary);
+}
+.reticle-cross-v {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px; height: 30px;
+  background: var(--primary);
+}
+
+/* ── AR WAYPOINT MARKERS ── */
+.ar-marker {
+  position: absolute;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px;
+  transition: left 0.15s ease-out, top 0.1s ease-out, opacity 0.3s ease;
+}
+.ar-marker-dot {
+  width: 14px; height: 14px;
+  background: var(--primary-container);
+  border: 2px solid var(--primary);
+  display: flex; align-items: center; justify-content: center;
+}
+.ar-marker-dot::after {
+  content: '';
+  width: 4px; height: 4px;
+  background: var(--primary);
+}
+.ar-marker-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--on-surface);
+  background: rgba(14,14,14,0.8);
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+.ar-marker-dist {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 800;
+  color: var(--primary);
+  font-style: italic;
+}
+/* off-screen indicator arrows */
+.ar-edge-indicator {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+/* ── WAYPOINTS LIST VIEW ── */
+#waypoints-view {
+  background: var(--surface);
+}
+.wp-header {
+  padding: 16px 20px;
+  background: var(--surface-lowest);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.wp-header h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--on-surface);
+}
+.wp-list {
+  flex: 1; overflow-y: auto;
+  padding: 12px 20px;
+}
+.wp-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 0;
+  cursor: pointer;
+}
+.wp-item + .wp-item {
+  border-top: 1px solid rgba(90,64,60,0.15);
+}
+.wp-item-left { display: flex; align-items: center; gap: 12px; }
+.wp-item-dot {
+  width: 6px; height: 6px;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+.wp-item-dot.inactive { background: var(--outline-variant); }
+.wp-item-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--on-surface);
+}
+.wp-item-dist {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--secondary);
+}
+.wp-item-bearing {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  color: var(--on-surface-variant);
+  letter-spacing: 0.1em;
+}
+.wp-empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--on-surface-variant);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── ADD WAYPOINT PANEL ── */
+.wp-add-panel {
+  position: absolute; bottom: 80px; left: 0; right: 0;
+  background: var(--surface-container-high);
+  padding: 20px;
+  z-index: 20;
+  display: none;
+  flex-direction: column; gap: 16px;
+}
+.wp-add-panel.open { display: flex; }
+.wp-add-panel h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.wp-input {
+  background: var(--surface);
+  border: none;
+  border-bottom: 2px solid rgba(170,137,132,0.3);
+  color: var(--on-surface);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  padding: 10px 4px;
+  width: 100%;
+  outline: none;
+}
+.wp-input:focus {
+  border-bottom-color: var(--primary);
+  background: var(--surface-container-high);
+}
+.wp-input::placeholder {
+  color: var(--outline-variant);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.wp-input-row { display: flex; gap: 12px; }
+.wp-input-row .wp-input { flex: 1; }
+.wp-btn {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  border: none;
+  padding: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.wp-btn:active { background: var(--secondary); color: var(--surface); }
+.wp-btn-secondary {
+  background: var(--surface-container-low);
+  color: var(--secondary);
+  border: none; border-left: 2px solid var(--primary);
+  padding: 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.wp-btn-row { display: flex; gap: 8px; }
+.wp-btn-row .wp-btn, .wp-btn-row .wp-btn-secondary { flex: 1; }
+
+/* ── NODE (STATUS) VIEW ── */
+#node-view {
+  background: var(--surface);
+  padding: 0 20px;
+  overflow-y: auto;
+  padding-bottom: 100px;
+}
+.node-section {
+  padding: 20px 0;
+}
+.node-section + .node-section {
+  border-top: 1px solid rgba(90,64,60,0.1);
+}
+.node-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+.node-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0;
+}
+.node-key {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+.node-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--secondary);
+  font-style: italic;
+}
+.node-val.ok { color: #81c784; }
+.node-val.warn { color: var(--error); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 72px; z-index: 50;
+  display: flex;
+  background: linear-gradient(to bottom, var(--surface-bright), var(--surface-lowest));
+}
+.nav-tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  color: var(--secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none; background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-tab.active {
+  background: var(--primary-container);
+  color: var(--primary);
+}
+.nav-tab-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── PERMISSION PROMPT ── */
+.permission-screen {
+  position: absolute; inset: 0; z-index: 100;
+  background: var(--surface-lowest);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px; padding: 40px;
+  text-align: center;
+}
+.permission-screen h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px; font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--on-surface);
+}
+.permission-screen p {
+  font-size: 12px; color: var(--on-surface-variant);
+  line-height: 1.6; max-width: 280px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+  z-index: 200;
+  background: var(--surface-container-highest);
+  color: var(--on-surface);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  opacity: 0; transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- PERMISSION SCREEN -->
+<div class="permission-screen" id="permission-screen">
+  <span class="material-symbols-outlined" style="font-size:48px;color:var(--primary)">sensors</span>
+  <h2>NEURAL_CONDUIT</h2>
+  <p>AR waypoint navigation requires access to your camera, location, and device orientation sensors.</p>
+  <button class="wp-btn" id="btn-grant" style="width:200px">Initialize Systems</button>
+  <p style="font-size:10px;color:var(--outline-variant);margin-top:8px">All data stays on-device. Nothing is transmitted.</p>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ SCAN VIEW (AR Camera) ═══ -->
+<div class="view" id="scan-view">
+  <div id="camera-view">
+    <video id="camera-feed" autoplay playsinline muted></video>
+    <canvas id="ar-overlay"></canvas>
+
+    <!-- Reticle -->
+    <div class="reticle">
+      <div class="reticle-ring"></div>
+      <div class="reticle-cross-h"></div>
+      <div class="reticle-cross-v"></div>
+    </div>
+
+    <!-- HUD Top -->
+    <div class="hud-top">
+      <div>
+        <div class="hud-label">Signal Lock</div>
+        <div class="signal-bar"><div class="signal-bar-fill" id="signal-fill" style="width:0%"></div></div>
+        <div class="hud-sublabel" id="gps-accuracy">ACQUIRING...</div>
+      </div>
+      <div style="text-align:right">
+        <div class="hud-label" id="compass-label">HDG</div>
+        <div style="display:flex;align-items:baseline;justify-content:flex-end">
+          <span class="hud-value" id="compass-heading" style="font-size:32px">---</span>
+          <span class="hud-unit">°</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD Bottom -->
+    <div class="hud-bottom">
+      <div>
+        <div class="hud-label">Nearest Node</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+          <span class="hud-value" id="nearest-dist">--</span>
+          <span class="hud-unit" id="nearest-unit">M</span>
+        </div>
+        <div class="hud-sublabel" id="nearest-name">NO_WAYPOINTS</div>
+      </div>
+      <div style="text-align:right">
+        <div class="hud-label">Bearing</div>
+        <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:6px;margin-top:4px">
+          <span class="hud-value" id="nearest-bearing" style="font-size:32px">---</span>
+          <span class="hud-unit">°</span>
+        </div>
+        <div class="hud-sublabel">REL_VECTOR</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WAYPOINTS VIEW ═══ -->
+<div class="view" id="waypoints-view">
+  <div class="wp-header">
+    <h2>Local Waypoints</h2>
+    <button class="material-symbols-outlined" id="btn-add-wp"
+      style="background:var(--primary-container);color:var(--on-primary-container);border:none;width:36px;height:36px;font-size:20px;cursor:pointer">
+      add
+    </button>
+  </div>
+  <div class="wp-list" id="wp-list"></div>
+
+  <!-- Add waypoint panel -->
+  <div class="wp-add-panel" id="wp-add-panel">
+    <h3>New Waypoint</h3>
+    <input class="wp-input" id="wp-name" placeholder="Designation (e.g. HOME_BASE)" maxlength="24"/>
+    <div class="wp-input-row">
+      <input class="wp-input" id="wp-lat" placeholder="Latitude" type="number" step="any"/>
+      <input class="wp-input" id="wp-lng" placeholder="Longitude" type="number" step="any"/>
+    </div>
+    <div class="wp-btn-row">
+      <button class="wp-btn-secondary" id="btn-use-current">Use Current Loc</button>
+      <button class="wp-btn" id="btn-save-wp">Commit</button>
+    </div>
+    <button class="wp-btn-secondary" id="btn-cancel-wp" style="border-left:none;text-align:center">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══ NODE (STATUS) VIEW ═══ -->
+<div class="view" id="node-view">
+  <div class="wp-header">
+    <h2>System Node</h2>
+  </div>
+  <div class="node-section">
+    <div class="node-section-title">Position</div>
+    <div class="node-row"><span class="node-key">Latitude</span><span class="node-val" id="node-lat">--</span></div>
+    <div class="node-row"><span class="node-key">Longitude</span><span class="node-val" id="node-lng">--</span></div>
+    <div class="node-row"><span class="node-key">Altitude</span><span class="node-val" id="node-alt">--</span></div>
+    <div class="node-row"><span class="node-key">Accuracy</span><span class="node-val" id="node-acc">--</span></div>
+    <div class="node-row"><span class="node-key">Speed</span><span class="node-val" id="node-speed">--</span></div>
+  </div>
+  <div class="node-section">
+    <div class="node-section-title">Orientation</div>
+    <div class="node-row"><span class="node-key">Compass Heading</span><span class="node-val" id="node-heading">--</span></div>
+    <div class="node-row"><span class="node-key">Tilt (Beta)</span><span class="node-val" id="node-tilt">--</span></div>
+  </div>
+  <div class="node-section">
+    <div class="node-section-title">System</div>
+    <div class="node-row"><span class="node-key">Camera</span><span class="node-val" id="node-cam">OFFLINE</span></div>
+    <div class="node-row"><span class="node-key">GPS</span><span class="node-val" id="node-gps">OFFLINE</span></div>
+    <div class="node-row"><span class="node-key">Compass</span><span class="node-val" id="node-compass">OFFLINE</span></div>
+    <div class="node-row"><span class="node-key">Waypoints Loaded</span><span class="node-val" id="node-wp-count">0</span></div>
+  </div>
+  <div class="node-section">
+    <div class="node-section-title">Actions</div>
+    <button class="wp-btn" id="btn-export-wp" style="width:100%;margin-bottom:8px">Export Waypoints</button>
+    <button class="wp-btn-secondary" id="btn-clear-wp" style="width:100%;border-left:2px solid var(--error);text-align:center">Purge All Waypoints</button>
+  </div>
+</div>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="nav-tab active" data-view="scan-view">
+    <span class="material-symbols-outlined">biotech</span>
+    <span class="nav-tab-label">Scan</span>
+  </button>
+  <button class="nav-tab" data-view="waypoints-view">
+    <span class="material-symbols-outlined">polyline</span>
+    <span class="nav-tab-label">Waypoints</span>
+  </button>
+  <button class="nav-tab" data-view="node-view">
+    <span class="material-symbols-outlined">settings_input_component</span>
+    <span class="nav-tab-label">Node</span>
+  </button>
+</nav>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// NEURAL_CONDUIT — AR Waypoint Navigation PWA
+// ════════════════════════════════════════════════════════════════
+
+const DEG = Math.PI / 180;
+const RAD = 180 / Math.PI;
+const EARTH_R = 6371000; // meters
+const FOV_H = 60; // horizontal field of view estimate for Pixel 6A rear camera
+
+// ── STATE ──
+let userLat = null, userLng = null, userAlt = null, userAcc = null, userSpeed = null;
+let compassHeading = null;
+let phoneTilt = null; // beta: 0=flat, 90=upright
+let cameraStream = null;
+let waypoints = []; // { id, name, lat, lng }
+let watchId = null;
+
+// ── DOM REFS ──
+const $ = id => document.getElementById(id);
+const permScreen = $('permission-screen');
+const btnGrant = $('btn-grant');
+const bottomNav = $('bottom-nav');
+const videoEl = $('camera-feed');
+const arCanvas = $('ar-overlay');
+const arCtx = arCanvas.getContext('2d');
+const toastEl = $('toast');
+
+// ── TOAST ──
+let toastTimer = null;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2500);
+}
+
+// ── PERSISTENCE ──
+function saveWaypoints() {
+  try { localStorage.setItem('nc_waypoints', JSON.stringify(waypoints)); } catch(e) {}
+}
+function loadWaypoints() {
+  try {
+    const d = localStorage.getItem('nc_waypoints');
+    if (d) waypoints = JSON.parse(d);
+  } catch(e) {}
+}
+
+// ── GEO MATH ──
+function haversine(lat1, lng1, lat2, lng2) {
+  const dLat = (lat2 - lat1) * DEG;
+  const dLng = (lng2 - lng1) * DEG;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*DEG) * Math.cos(lat2*DEG) * Math.sin(dLng/2)**2;
+  return EARTH_R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function bearing(lat1, lng1, lat2, lng2) {
+  const dLng = (lng2 - lng1) * DEG;
+  const y = Math.sin(dLng) * Math.cos(lat2 * DEG);
+  const x = Math.cos(lat1*DEG) * Math.sin(lat2*DEG) - Math.sin(lat1*DEG) * Math.cos(lat2*DEG) * Math.cos(dLng);
+  return ((Math.atan2(y, x) * RAD) + 360) % 360;
+}
+
+function formatDist(m) {
+  if (m >= 1000) return { val: (m/1000).toFixed(2), unit: 'KM' };
+  return { val: Math.round(m).toString(), unit: 'M' };
+}
+
+// ── CAMERA ──
+async function startCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    });
+    videoEl.srcObject = cameraStream;
+    $('node-cam').textContent = 'ONLINE';
+    $('node-cam').classList.add('ok');
+    return true;
+  } catch(e) {
+    console.error('Camera error:', e);
+    $('node-cam').textContent = 'DENIED';
+    $('node-cam').classList.add('warn');
+    toast('CAMERA ACCESS DENIED');
+    return false;
+  }
+}
+
+// ── GPS ──
+function startGPS() {
+  if (!('geolocation' in navigator)) {
+    toast('GEOLOCATION NOT AVAILABLE');
+    return;
+  }
+  watchId = navigator.geolocation.watchPosition(
+    pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      userAlt = pos.coords.altitude;
+      userAcc = pos.coords.accuracy;
+      userSpeed = pos.coords.speed;
+
+      // Update signal bar (accuracy → signal strength)
+      const sig = Math.max(0, Math.min(100, 100 - (userAcc / 2)));
+      $('signal-fill').style.width = sig + '%';
+      $('gps-accuracy').textContent = '±' + Math.round(userAcc) + 'M';
+
+      // Node view
+      $('node-lat').textContent = userLat.toFixed(6);
+      $('node-lng').textContent = userLng.toFixed(6);
+      $('node-alt').textContent = userAlt != null ? Math.round(userAlt) + 'm' : '--';
+      $('node-acc').textContent = Math.round(userAcc) + 'm';
+      $('node-speed').textContent = userSpeed != null ? (userSpeed * 3.6).toFixed(1) + ' km/h' : '--';
+      $('node-gps').textContent = 'TRACKING';
+      $('node-gps').classList.add('ok');
+    },
+    err => {
+      console.error('GPS error:', err);
+      $('node-gps').textContent = 'ERROR';
+      $('node-gps').classList.add('warn');
+      toast('GPS ERROR: ' + err.message);
+    },
+    { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+  );
+}
+
+// ── COMPASS ──
+function startCompass() {
+  function handleOrientation(e) {
+    // Android Chrome: e.alpha is compass heading when e.absolute is true
+    // Or use webkitCompassHeading on iOS
+    let heading = null;
+    if (e.webkitCompassHeading !== undefined) {
+      heading = e.webkitCompassHeading;
+    } else if (e.absolute && e.alpha != null) {
+      heading = (360 - e.alpha) % 360;
+    } else if (e.alpha != null) {
+      heading = (360 - e.alpha) % 360;
+    }
+    if (heading != null) {
+      compassHeading = heading;
+      $('compass-heading').textContent = Math.round(heading);
+      $('node-heading').textContent = Math.round(heading) + '°';
+      $('node-compass').textContent = 'ACTIVE';
+      $('node-compass').classList.add('ok');
+    }
+    if (e.beta != null) {
+      phoneTilt = e.beta;
+      $('node-tilt').textContent = Math.round(e.beta) + '°';
+    }
+  }
+
+  // Some browsers need permission request
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(state => {
+      if (state === 'granted') {
+        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+        window.addEventListener('deviceorientation', handleOrientation, true);
+      }
+    }).catch(console.error);
+  } else {
+    // Try absolute first, fall back to standard
+    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+    window.addEventListener('deviceorientation', handleOrientation, true);
+  }
+}
+
+// ── AR RENDERING ──
+function resizeCanvas() {
+  arCanvas.width = window.innerWidth;
+  arCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+
+function renderAR() {
+  const W = arCanvas.width;
+  const H = arCanvas.height;
+  arCtx.clearRect(0, 0, W, H);
+
+  if (userLat == null || compassHeading == null || waypoints.length === 0) {
+    requestAnimationFrame(renderAR);
+    return;
+  }
+
+  // For each waypoint, compute screen position
+  let nearest = null;
+  let nearestDist = Infinity;
+
+  waypoints.forEach(wp => {
+    const dist = haversine(userLat, userLng, wp.lat, wp.lng);
+    const bear = bearing(userLat, userLng, wp.lat, wp.lng);
+
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = { ...wp, dist, bearing: bear };
+    }
+
+    // Relative bearing: how far left/right of where the camera points
+    let relBearing = bear - compassHeading;
+    // Normalize to -180..180
+    while (relBearing > 180) relBearing -= 360;
+    while (relBearing < -180) relBearing += 360;
+
+    const halfFov = FOV_H / 2;
+    const screenX = W / 2 + (relBearing / halfFov) * (W / 2);
+
+    // Vertical position: tilt-based. If phone is upright (~90°), markers at horizon (center).
+    // Simple model: place markers at vertical center, adjusted slightly by distance
+    const verticalOffset = Math.max(-0.2, Math.min(0.2, -0.001 * (90 - (phoneTilt || 90))));
+    const screenY = H * (0.4 + verticalOffset);
+
+    // Check if on screen (with some margin)
+    const margin = 60;
+    const onScreen = screenX > -margin && screenX < W + margin;
+
+    if (onScreen) {
+      // Draw connector line from marker to bottom
+      arCtx.beginPath();
+      arCtx.strokeStyle = 'rgba(137,7,14,0.4)';
+      arCtx.lineWidth = 1;
+      arCtx.setLineDash([4, 4]);
+      arCtx.moveTo(screenX, screenY + 20);
+      arCtx.lineTo(screenX, H - 80);
+      arCtx.stroke();
+      arCtx.setLineDash([]);
+
+      // Draw marker diamond
+      const s = 10;
+      arCtx.beginPath();
+      arCtx.moveTo(screenX, screenY - s);
+      arCtx.lineTo(screenX + s, screenY);
+      arCtx.lineTo(screenX, screenY + s);
+      arCtx.lineTo(screenX - s, screenY);
+      arCtx.closePath();
+      arCtx.fillStyle = 'rgba(137,7,14,0.8)';
+      arCtx.fill();
+      arCtx.strokeStyle = '#ffb4ac';
+      arCtx.lineWidth = 1.5;
+      arCtx.stroke();
+
+      // Inner dot
+      arCtx.beginPath();
+      arCtx.arc(screenX, screenY, 2.5, 0, Math.PI * 2);
+      arCtx.fillStyle = '#ffb4ac';
+      arCtx.fill();
+
+      // Label
+      const fd = formatDist(dist);
+      const label = wp.name;
+      const distLabel = fd.val + ' ' + fd.unit;
+
+      arCtx.font = "700 9px 'Space Grotesk', sans-serif";
+      arCtx.letterSpacing = '1px';
+      const labelW = arCtx.measureText(label).width + 16;
+      const distW = arCtx.measureText(distLabel).width + 12;
+      const boxW = Math.max(labelW, distW);
+
+      // Label background
+      arCtx.fillStyle = 'rgba(14,14,14,0.85)';
+      arCtx.fillRect(screenX - boxW/2, screenY - s - 32, boxW, 22);
+
+      // Label text
+      arCtx.fillStyle = '#e5e2e1';
+      arCtx.textAlign = 'center';
+      arCtx.textBaseline = 'middle';
+      arCtx.fillText(label, screenX, screenY - s - 21);
+
+      // Distance
+      arCtx.font = "800 italic 11px 'Space Grotesk', sans-serif";
+      arCtx.fillStyle = '#ffb4ac';
+      arCtx.fillText(distLabel, screenX, screenY + s + 14);
+
+    } else {
+      // Off-screen: draw edge indicator
+      const edgeY = H * 0.4;
+      const arrowSize = 8;
+      arCtx.fillStyle = '#ffb4ac';
+      arCtx.font = "700 9px 'Space Grotesk', sans-serif";
+      arCtx.textBaseline = 'middle';
+
+      if (relBearing < 0) {
+        // Left edge
+        arCtx.beginPath();
+        arCtx.moveTo(16, edgeY);
+        arCtx.lineTo(16 + arrowSize, edgeY - arrowSize);
+        arCtx.lineTo(16 + arrowSize, edgeY + arrowSize);
+        arCtx.closePath();
+        arCtx.fill();
+        arCtx.textAlign = 'left';
+        arCtx.fillText(wp.name + ' ' + formatDist(dist).val + formatDist(dist).unit, 30, edgeY);
+      } else {
+        // Right edge
+        arCtx.beginPath();
+        arCtx.moveTo(W - 16, edgeY);
+        arCtx.lineTo(W - 16 - arrowSize, edgeY - arrowSize);
+        arCtx.lineTo(W - 16 - arrowSize, edgeY + arrowSize);
+        arCtx.closePath();
+        arCtx.fill();
+        arCtx.textAlign = 'right';
+        arCtx.fillText(wp.name + ' ' + formatDist(dist).val + formatDist(dist).unit, W - 30, edgeY);
+      }
+    }
+  });
+
+  // Update HUD nearest waypoint
+  if (nearest) {
+    const fd = formatDist(nearest.dist);
+    $('nearest-dist').textContent = fd.val;
+    $('nearest-unit').textContent = fd.unit;
+    $('nearest-name').textContent = nearest.name;
+    $('nearest-bearing').textContent = Math.round(nearest.bearing);
+  }
+
+  requestAnimationFrame(renderAR);
+}
+
+// ── WAYPOINT LIST RENDERING ──
+function renderWaypointList() {
+  const list = $('wp-list');
+  $('node-wp-count').textContent = waypoints.length;
+
+  if (waypoints.length === 0) {
+    list.innerHTML = '<div class="wp-empty">No waypoints registered.<br/>Tap + to add a node.</div>';
+    return;
+  }
+
+  list.innerHTML = waypoints.map(wp => {
+    let distStr = '--';
+    let bearStr = '--';
+    if (userLat != null) {
+      const d = haversine(userLat, userLng, wp.lat, wp.lng);
+      const b = bearing(userLat, userLng, wp.lat, wp.lng);
+      const fd = formatDist(d);
+      distStr = fd.val + ' ' + fd.unit;
+      bearStr = Math.round(b) + '°';
+    }
+    return `
+      <div class="wp-item" data-id="${wp.id}">
+        <div class="wp-item-left">
+          <div class="wp-item-dot"></div>
+          <div>
+            <div class="wp-item-name">${wp.name}</div>
+            <div class="wp-item-bearing">${wp.lat.toFixed(4)}, ${wp.lng.toFixed(4)} · ${bearStr}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="wp-item-dist">${distStr}</div>
+          <button class="material-symbols-outlined"
+            onclick="deleteWaypoint('${wp.id}')"
+            style="background:none;border:none;color:var(--outline-variant);font-size:16px;cursor:pointer;margin-top:4px">
+            delete
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function deleteWaypoint(id) {
+  waypoints = waypoints.filter(w => w.id !== id);
+  saveWaypoints();
+  renderWaypointList();
+  toast('WAYPOINT PURGED');
+}
+
+// ── NAVIGATION ──
+function switchView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.view === viewId);
+  });
+  // Refresh waypoint list when switching to that view
+  if (viewId === 'waypoints-view') renderWaypointList();
+}
+
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchView(tab.dataset.view));
+});
+
+// ── ADD WAYPOINT PANEL ──
+$('btn-add-wp').addEventListener('click', () => {
+  $('wp-add-panel').classList.add('open');
+  $('wp-name').focus();
+});
+$('btn-cancel-wp').addEventListener('click', () => {
+  $('wp-add-panel').classList.remove('open');
+  $('wp-name').value = ''; $('wp-lat').value = ''; $('wp-lng').value = '';
+});
+$('btn-use-current').addEventListener('click', () => {
+  if (userLat != null) {
+    $('wp-lat').value = userLat.toFixed(6);
+    $('wp-lng').value = userLng.toFixed(6);
+    toast('CURRENT POSITION LOADED');
+  } else {
+    toast('GPS NOT LOCKED');
+  }
+});
+$('btn-save-wp').addEventListener('click', () => {
+  const name = $('wp-name').value.trim().toUpperCase().replace(/\s+/g, '_') || ('WP_' + (waypoints.length + 1));
+  const lat = parseFloat($('wp-lat').value);
+  const lng = parseFloat($('wp-lng').value);
+  if (isNaN(lat) || isNaN(lng)) { toast('INVALID COORDINATES'); return; }
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) { toast('COORDINATES OUT OF RANGE'); return; }
+
+  waypoints.push({ id: Date.now().toString(36), name, lat, lng });
+  saveWaypoints();
+  renderWaypointList();
+
+  $('wp-add-panel').classList.remove('open');
+  $('wp-name').value = ''; $('wp-lat').value = ''; $('wp-lng').value = '';
+  toast('WAYPOINT COMMITTED: ' + name);
+});
+
+// ── NODE VIEW ACTIONS ──
+$('btn-export-wp').addEventListener('click', () => {
+  if (waypoints.length === 0) { toast('NO WAYPOINTS TO EXPORT'); return; }
+  const data = JSON.stringify(waypoints, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'waypoints_' + Date.now() + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  toast('WAYPOINTS EXPORTED');
+});
+$('btn-clear-wp').addEventListener('click', () => {
+  if (waypoints.length === 0) return;
+  if (confirm('PURGE ALL WAYPOINTS? This cannot be undone.')) {
+    waypoints = [];
+    saveWaypoints();
+    renderWaypointList();
+    toast('ALL WAYPOINTS PURGED');
+  }
+});
+
+// ── PERIODIC WAYPOINT LIST UPDATE ──
+setInterval(() => {
+  if (document.querySelector('#waypoints-view.active')) {
+    renderWaypointList();
+  }
+}, 3000);
+
+// ── INIT ──
+loadWaypoints();
+
+btnGrant.addEventListener('click', async () => {
+  permScreen.style.display = 'none';
+  bottomNav.style.display = 'flex';
+  switchView('scan-view');
+  resizeCanvas();
+
+  await startCamera();
+  startGPS();
+  startCompass();
+  requestAnimationFrame(renderAR);
+});
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
