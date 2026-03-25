@@ -192,6 +192,39 @@ html, body {
   opacity: 0.8;
 }
 
+/* ── NEARBY PULSE ── */
+.nearby-pulse {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 4; pointer-events: none;
+  text-align: center;
+  display: none;
+}
+.nearby-pulse.active { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.nearby-ring {
+  width: 160px; height: 160px;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  animation: pulse-ring 2s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.nearby-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.nearby-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px; font-weight: 800;
+  color: var(--secondary);
+  font-style: italic;
+}
+
 /* ── WAYPOINTS LIST VIEW ── */
 #waypoints-view {
   background: var(--surface);
@@ -454,6 +487,13 @@ html, body {
       <div class="reticle-cross-v"></div>
     </div>
 
+    <!-- Nearby pulse overlay (shown when waypoint is within GPS error) -->
+    <div class="nearby-pulse" id="nearby-pulse">
+      <div class="nearby-ring"></div>
+      <div class="nearby-label">PROXIMITY</div>
+      <div class="nearby-name" id="nearby-name">--</div>
+    </div>
+
     <!-- HUD Top -->
     <div class="hud-top">
       <div>
@@ -570,20 +610,35 @@ html, body {
 <script>
 // ════════════════════════════════════════════════════════════════
 // NEURAL_CONDUIT — AR Waypoint Navigation PWA
+// v2: Stabilized compass, GPS, and AR marker rendering
 // ════════════════════════════════════════════════════════════════
 
 const DEG = Math.PI / 180;
 const RAD = 180 / Math.PI;
 const EARTH_R = 6371000; // meters
-const FOV_H = 60; // horizontal field of view estimate for Pixel 6A rear camera
+const FOV_H = 60; // horizontal FOV estimate for Pixel 6A rear camera
+
+// ── SMOOTHING CONSTANTS ──
+const COMPASS_ALPHA = 0.15;       // Low-pass filter weight for compass (lower = smoother, 0.1-0.2 is good)
+const GPS_ALPHA = 0.3;            // Low-pass filter weight for GPS position
+const MARKER_LERP = 0.12;         // How fast AR markers slide to new positions (lower = smoother)
+const NEARBY_THRESHOLD_M = 30;    // Distance below which we show "NEARBY" instead of jittery marker
+const GPS_JITTER_GATE_M = 2;      // Ignore GPS updates that move less than this (meters)
 
 // ── STATE ──
+let rawLat = null, rawLng = null;
 let userLat = null, userLng = null, userAlt = null, userAcc = null, userSpeed = null;
-let compassHeading = null;
-let phoneTilt = null; // beta: 0=flat, 90=upright
+let rawHeading = null;
+let smoothHeading = null;         // Smoothed compass heading
+let phoneTilt = null;
+let smoothTilt = null;
 let cameraStream = null;
-let waypoints = []; // { id, name, lat, lng }
+let waypoints = [];               // { id, name, lat, lng }
 let watchId = null;
+let gpsFixCount = 0;              // Track how many fixes we've received
+
+// Per-waypoint smoothed screen positions: { [wpId]: { x, y, bearing, dist } }
+let markerState = {};
 
 // ── DOM REFS ──
 const $ = id => document.getElementById(id);
@@ -594,6 +649,8 @@ const videoEl = $('camera-feed');
 const arCanvas = $('ar-overlay');
 const arCtx = arCanvas.getContext('2d');
 const toastEl = $('toast');
+const nearbyPulse = $('nearby-pulse');
+const nearbyNameEl = $('nearby-name');
 
 // ── TOAST ──
 let toastTimer = null;
@@ -635,6 +692,21 @@ function formatDist(m) {
   return { val: Math.round(m).toString(), unit: 'M' };
 }
 
+// ── ANGULAR MATH (handles wrap-around at 0/360) ──
+function angleDiff(a, b) {
+  // Returns shortest signed difference from a to b, in degrees
+  let d = b - a;
+  while (d > 180) d -= 360;
+  while (d < -180) d += 360;
+  return d;
+}
+
+function lerpAngle(current, target, alpha) {
+  // Smoothly interpolate between angles, handling 0/360 wrap
+  const diff = angleDiff(current, target);
+  return ((current + diff * alpha) + 360) % 360;
+}
+
 // ── CAMERA ──
 async function startCamera() {
   try {
@@ -655,7 +727,7 @@ async function startCamera() {
   }
 }
 
-// ── GPS ──
+// ── GPS (with smoothing and jitter gate) ──
 function startGPS() {
   if (!('geolocation' in navigator)) {
     toast('GEOLOCATION NOT AVAILABLE');
@@ -663,11 +735,30 @@ function startGPS() {
   }
   watchId = navigator.geolocation.watchPosition(
     pos => {
-      userLat = pos.coords.latitude;
-      userLng = pos.coords.longitude;
+      rawLat = pos.coords.latitude;
+      rawLng = pos.coords.longitude;
       userAlt = pos.coords.altitude;
       userAcc = pos.coords.accuracy;
       userSpeed = pos.coords.speed;
+      gpsFixCount++;
+
+      if (userLat === null) {
+        // First fix: accept directly
+        userLat = rawLat;
+        userLng = rawLng;
+      } else {
+        // Jitter gate: if the new position is within GPS_JITTER_GATE_M of the
+        // smoothed position, ignore it (it's probably noise)
+        const jumpDist = haversine(userLat, userLng, rawLat, rawLng);
+        if (jumpDist > GPS_JITTER_GATE_M) {
+          // Low-pass filter: blend toward new position
+          // Use a dynamic alpha — trust accurate readings more
+          const accFactor = Math.max(0.1, Math.min(1, 10 / (userAcc || 10)));
+          const alpha = GPS_ALPHA * accFactor;
+          userLat = userLat + (rawLat - userLat) * alpha;
+          userLng = userLng + (rawLng - userLng) * alpha;
+        }
+      }
 
       // Update signal bar (accuracy → signal strength)
       const sig = Math.max(0, Math.min(100, 100 - (userAcc / 2)));
@@ -693,11 +784,9 @@ function startGPS() {
   );
 }
 
-// ── COMPASS ──
+// ── COMPASS (with low-pass filter) ──
 function startCompass() {
   function handleOrientation(e) {
-    // Android Chrome: e.alpha is compass heading when e.absolute is true
-    // Or use webkitCompassHeading on iOS
     let heading = null;
     if (e.webkitCompassHeading !== undefined) {
       heading = e.webkitCompassHeading;
@@ -706,20 +795,31 @@ function startCompass() {
     } else if (e.alpha != null) {
       heading = (360 - e.alpha) % 360;
     }
+
     if (heading != null) {
-      compassHeading = heading;
-      $('compass-heading').textContent = Math.round(heading);
-      $('node-heading').textContent = Math.round(heading) + '°';
+      rawHeading = heading;
+      if (smoothHeading === null) {
+        smoothHeading = heading; // First reading: accept directly
+      } else {
+        // Low-pass filter with proper angular interpolation
+        smoothHeading = lerpAngle(smoothHeading, heading, COMPASS_ALPHA);
+      }
+      $('compass-heading').textContent = Math.round(smoothHeading);
+      $('node-heading').textContent = Math.round(smoothHeading) + '°';
       $('node-compass').textContent = 'ACTIVE';
       $('node-compass').classList.add('ok');
     }
     if (e.beta != null) {
-      phoneTilt = e.beta;
-      $('node-tilt').textContent = Math.round(e.beta) + '°';
+      if (smoothTilt === null) {
+        smoothTilt = e.beta;
+      } else {
+        smoothTilt = smoothTilt + (e.beta - smoothTilt) * 0.15;
+      }
+      phoneTilt = smoothTilt;
+      $('node-tilt').textContent = Math.round(smoothTilt) + '°';
     }
   }
 
-  // Some browsers need permission request
   if (typeof DeviceOrientationEvent !== 'undefined' &&
       typeof DeviceOrientationEvent.requestPermission === 'function') {
     DeviceOrientationEvent.requestPermission().then(state => {
@@ -729,13 +829,12 @@ function startCompass() {
       }
     }).catch(console.error);
   } else {
-    // Try absolute first, fall back to standard
     window.addEventListener('deviceorientationabsolute', handleOrientation, true);
     window.addEventListener('deviceorientation', handleOrientation, true);
   }
 }
 
-// ── AR RENDERING ──
+// ── AR RENDERING (with marker position smoothing and nearby dead zone) ──
 function resizeCanvas() {
   arCanvas.width = window.innerWidth;
   arCanvas.height = window.innerHeight;
@@ -747,14 +846,15 @@ function renderAR() {
   const H = arCanvas.height;
   arCtx.clearRect(0, 0, W, H);
 
-  if (userLat == null || compassHeading == null || waypoints.length === 0) {
+  if (userLat == null || smoothHeading == null || waypoints.length === 0) {
+    nearbyPulse.classList.remove('active');
     requestAnimationFrame(renderAR);
     return;
   }
 
-  // For each waypoint, compute screen position
   let nearest = null;
   let nearestDist = Infinity;
+  let anyNearby = false;
 
   waypoints.forEach(wp => {
     const dist = haversine(userLat, userLng, wp.lat, wp.lng);
@@ -765,26 +865,46 @@ function renderAR() {
       nearest = { ...wp, dist, bearing: bear };
     }
 
-    // Relative bearing: how far left/right of where the camera points
-    let relBearing = bear - compassHeading;
-    // Normalize to -180..180
-    while (relBearing > 180) relBearing -= 360;
-    while (relBearing < -180) relBearing += 360;
+    // ── NEARBY DEAD ZONE ──
+    // If the waypoint is within the threshold (or within GPS accuracy),
+    // don't try to place it on the AR view — show a proximity pulse instead
+    const effectiveThreshold = Math.max(NEARBY_THRESHOLD_M, (userAcc || 10) * 1.5);
+    if (dist < effectiveThreshold) {
+      anyNearby = true;
+      nearbyNameEl.textContent = wp.name + ' · ' + Math.round(dist) + 'M';
+      return; // skip AR placement for this waypoint
+    }
 
+    // ── RELATIVE BEARING ──
+    let relBearing = angleDiff(smoothHeading, bear);
+
+    // ── TARGET SCREEN POSITION ──
     const halfFov = FOV_H / 2;
-    const screenX = W / 2 + (relBearing / halfFov) * (W / 2);
-
-    // Vertical position: tilt-based. If phone is upright (~90°), markers at horizon (center).
-    // Simple model: place markers at vertical center, adjusted slightly by distance
+    const targetX = W / 2 + (relBearing / halfFov) * (W / 2);
     const verticalOffset = Math.max(-0.2, Math.min(0.2, -0.001 * (90 - (phoneTilt || 90))));
-    const screenY = H * (0.4 + verticalOffset);
+    const targetY = H * (0.4 + verticalOffset);
 
-    // Check if on screen (with some margin)
+    // ── SMOOTH MARKER POSITION ──
+    if (!markerState[wp.id]) {
+      markerState[wp.id] = { x: targetX, y: targetY, bearing: bear, dist: dist };
+    }
+    const ms = markerState[wp.id];
+
+    // Lerp screen position for smooth movement
+    ms.x = ms.x + (targetX - ms.x) * MARKER_LERP;
+    ms.y = ms.y + (targetY - ms.y) * MARKER_LERP;
+    ms.bearing = lerpAngle(ms.bearing, bear, MARKER_LERP);
+    ms.dist = ms.dist + (dist - ms.dist) * MARKER_LERP;
+
+    const screenX = ms.x;
+    const screenY = ms.y;
+
+    // Check if on screen
     const margin = 60;
     const onScreen = screenX > -margin && screenX < W + margin;
 
     if (onScreen) {
-      // Draw connector line from marker to bottom
+      // Connector line
       arCtx.beginPath();
       arCtx.strokeStyle = 'rgba(137,7,14,0.4)';
       arCtx.lineWidth = 1;
@@ -794,7 +914,7 @@ function renderAR() {
       arCtx.stroke();
       arCtx.setLineDash([]);
 
-      // Draw marker diamond
+      // Diamond marker
       const s = 10;
       arCtx.beginPath();
       arCtx.moveTo(screenX, screenY - s);
@@ -820,7 +940,6 @@ function renderAR() {
       const distLabel = fd.val + ' ' + fd.unit;
 
       arCtx.font = "700 9px 'Space Grotesk', sans-serif";
-      arCtx.letterSpacing = '1px';
       const labelW = arCtx.measureText(label).width + 16;
       const distW = arCtx.measureText(distLabel).width + 12;
       const boxW = Math.max(labelW, distW);
@@ -841,15 +960,17 @@ function renderAR() {
       arCtx.fillText(distLabel, screenX, screenY + s + 14);
 
     } else {
-      // Off-screen: draw edge indicator
+      // Off-screen edge indicator
       const edgeY = H * 0.4;
       const arrowSize = 8;
       arCtx.fillStyle = '#ffb4ac';
       arCtx.font = "700 9px 'Space Grotesk', sans-serif";
       arCtx.textBaseline = 'middle';
 
+      const fd = formatDist(dist);
+      const edgeText = wp.name + ' ' + fd.val + fd.unit;
+
       if (relBearing < 0) {
-        // Left edge
         arCtx.beginPath();
         arCtx.moveTo(16, edgeY);
         arCtx.lineTo(16 + arrowSize, edgeY - arrowSize);
@@ -857,9 +978,8 @@ function renderAR() {
         arCtx.closePath();
         arCtx.fill();
         arCtx.textAlign = 'left';
-        arCtx.fillText(wp.name + ' ' + formatDist(dist).val + formatDist(dist).unit, 30, edgeY);
+        arCtx.fillText(edgeText, 30, edgeY);
       } else {
-        // Right edge
         arCtx.beginPath();
         arCtx.moveTo(W - 16, edgeY);
         arCtx.lineTo(W - 16 - arrowSize, edgeY - arrowSize);
@@ -867,10 +987,17 @@ function renderAR() {
         arCtx.closePath();
         arCtx.fill();
         arCtx.textAlign = 'right';
-        arCtx.fillText(wp.name + ' ' + formatDist(dist).val + formatDist(dist).unit, W - 30, edgeY);
+        arCtx.fillText(edgeText, W - 30, edgeY);
       }
     }
   });
+
+  // Show/hide nearby pulse
+  if (anyNearby) {
+    nearbyPulse.classList.add('active');
+  } else {
+    nearbyPulse.classList.remove('active');
+  }
 
   // Update HUD nearest waypoint
   if (nearest) {
@@ -879,6 +1006,12 @@ function renderAR() {
     $('nearest-unit').textContent = fd.unit;
     $('nearest-name').textContent = nearest.name;
     $('nearest-bearing').textContent = Math.round(nearest.bearing);
+  }
+
+  // Clean up marker state for deleted waypoints
+  const wpIds = new Set(waypoints.map(w => w.id));
+  for (const id in markerState) {
+    if (!wpIds.has(id)) delete markerState[id];
   }
 
   requestAnimationFrame(renderAR);
@@ -939,7 +1072,6 @@ function switchView(viewId) {
   document.querySelectorAll('.nav-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.view === viewId);
   });
-  // Refresh waypoint list when switching to that view
   if (viewId === 'waypoints-view') renderWaypointList();
 }
 
@@ -962,7 +1094,7 @@ $('btn-use-current').addEventListener('click', () => {
     $('wp-lng').value = userLng.toFixed(6);
     toast('CURRENT POSITION LOADED');
   } else {
-    toast('GPS NOT LOCKED');
+    toast('GPS NOT LOCKED — WAITING FOR FIX');
   }
 });
 $('btn-save-wp').addEventListener('click', () => {

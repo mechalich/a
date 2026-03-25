@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAEDALUS GEN 0 // GARAGE BUILD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --cyan: #00fffe;
+    --cyan-dim: #00b8b8;
+    --cyan-glow: rgba(0, 255, 254, 0.15);
+    --orange: #ff6100;
+    --orange-dim: #cc4e00;
+    --orange-glow: rgba(255, 97, 0, 0.15);
+    --red: #ff2a2a;
+    --green: #00ff88;
+    --yellow: #ffe030;
+    --bg-deep: #0a0a0f;
+    --bg-panel: #0d0d14;
+    --bg-card: #111119;
+    --border: #1a1a2e;
+    --text: #c8d0e0;
+    --text-dim: #606880;
+    --grid-line: rgba(0, 255, 254, 0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* === HEADER === */
+  .header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+  .header h1 {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 3rem;
+    letter-spacing: 0.3em;
+    color: var(--cyan);
+    text-shadow: 0 0 40px rgba(0,255,254,0.3), 0 0 80px rgba(0,255,254,0.1);
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--orange);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .header .tagline {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* === LAYOUT === */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* === PHASE BANNER === */
+  .phase-banner {
+    background: linear-gradient(135deg, var(--bg-panel), var(--bg-card));
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--cyan);
+    border-radius: 4px;
+    padding: 24px 32px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .phase-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cyan), transparent 60%);
+  }
+  .phase-banner .phase-tag {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .phase-banner h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .phase-banner .objective {
+    color: var(--text);
+    font-size: 1.05rem;
+  }
+  .phase-banner .gate {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 3px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--green);
+  }
+  .phase-banner .gate::before {
+    content: 'GO/NO-GO: ';
+    font-weight: 700;
+  }
+  .phase-banner .cost {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--orange);
+  }
+
+  /* === SECTION HEADERS === */
+  .section-header {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin: 48px 0 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .section-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 120px;
+    height: 1px;
+    background: var(--cyan);
+  }
+
+  /* === BOM TABLE === */
+  .bom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 32px;
+    font-size: 0.95rem;
+  }
+  .bom-table thead th {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--cyan-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+  }
+  .bom-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(26,26,46,0.5);
+    vertical-align: top;
+  }
+  .bom-table tbody tr:hover {
+    background: var(--cyan-glow);
+  }
+  .bom-table .part-name {
+    color: #fff;
+    font-weight: 600;
+  }
+  .bom-table .part-number {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--cyan-dim);
+  }
+  .bom-table .price {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--orange);
+    white-space: nowrap;
+  }
+  .bom-table .supplier {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+  .bom-table .notes {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+  .bom-subtotal {
+    text-align: right;
+    padding: 12px 14px;
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    color: var(--orange);
+    border-top: 2px solid var(--orange-dim);
+  }
+
+  /* === CATEGORY TAG === */
+  .category-tag {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 4px;
+  }
+  .cat-scanner { background: rgba(0,255,254,0.1); color: var(--cyan); border: 1px solid rgba(0,255,254,0.2); }
+  .cat-electronics { background: rgba(255,97,0,0.1); color: var(--orange); border: 1px solid rgba(255,97,0,0.2); }
+  .cat-tip { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+  .cat-sample { background: rgba(255,224,48,0.1); color: var(--yellow); border: 1px solid rgba(255,224,48,0.2); }
+  .cat-vibration { background: rgba(180,120,255,0.1); color: #b478ff; border: 1px solid rgba(180,120,255,0.2); }
+  .cat-approach { background: rgba(255,42,42,0.1); color: var(--red); border: 1px solid rgba(255,42,42,0.2); }
+  .cat-power { background: rgba(255,180,60,0.1); color: #ffb43c; border: 1px solid rgba(255,180,60,0.2); }
+  .cat-structure { background: rgba(120,180,255,0.1); color: #78b4ff; border: 1px solid rgba(120,180,255,0.2); }
+
+  /* === TOOL CHECKLIST === */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin: 16px 0 32px;
+  }
+  .tool-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .tool-card:hover { border-color: var(--cyan-dim); }
+  .tool-card .checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--cyan-dim);
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .tool-card .checkbox.checked {
+    background: var(--cyan);
+    border-color: var(--cyan);
+  }
+  .tool-card .checkbox.checked::after {
+    content: '\2713';
+    color: var(--bg-deep);
+    font-weight: 900;
+    font-size: 14px;
+  }
+  .tool-card .tool-info .tool-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .tool-card .tool-info .tool-desc {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    margin-top: 2px;
+  }
+  .tool-card .tool-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-top: 4px;
+    display: inline-block;
+  }
+  .status-have { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+  .status-need { background: rgba(255,97,0,0.1); color: var(--orange); border: 1px solid rgba(255,97,0,0.2); }
+  .status-nice { background: rgba(100,100,140,0.1); color: #888; border: 1px solid rgba(100,100,140,0.2); }
+
+  /* === BUILD SEQUENCE === */
+  .build-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--cyan);
+    border-radius: 3px;
+    padding: 20px 24px;
+    margin: 12px 0;
+    position: relative;
+  }
+  .build-step .step-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--cyan-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .build-step h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .build-step p {
+    color: var(--text);
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+  .build-step .warning {
+    padding: 8px 12px;
+    background: rgba(255,42,42,0.08);
+    border: 1px solid rgba(255,42,42,0.2);
+    border-radius: 3px;
+    font-size: 0.85rem;
+    color: var(--red);
+    margin-top: 8px;
+  }
+  .build-step .tip-box {
+    padding: 8px 12px;
+    background: rgba(0,255,254,0.05);
+    border: 1px solid rgba(0,255,254,0.15);
+    border-radius: 3px;
+    font-size: 0.85rem;
+    color: var(--cyan);
+    margin-top: 8px;
+  }
+  .build-step .time-est {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  /* === ROADMAP TIMELINE === */
+  .roadmap {
+    margin: 24px 0 48px;
+    position: relative;
+    padding-left: 40px;
+  }
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--cyan), var(--orange), var(--green));
+  }
+  .roadmap-node {
+    position: relative;
+    margin-bottom: 32px;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .roadmap-node::before {
+    content: '';
+    position: absolute;
+    left: -33px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    background: var(--bg-deep);
+  }
+  .roadmap-node.active::before {
+    background: var(--cyan);
+    box-shadow: 0 0 12px rgba(0,255,254,0.4);
+  }
+  .roadmap-node.future::before {
+    border-color: var(--text-dim);
+  }
+  .roadmap-node .node-phase {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .roadmap-node .node-phase.cyan { color: var(--cyan); }
+  .roadmap-node .node-phase.orange { color: var(--orange); }
+  .roadmap-node .node-phase.green { color: var(--green); }
+  .roadmap-node .node-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .roadmap-node .node-desc {
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .roadmap-node .node-cost {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--orange);
+    font-size: 0.85rem;
+    margin-top: 6px;
+  }
+  .roadmap-node .node-gate {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--green);
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+
+  /* === CIRCUIT NOTES === */
+  .circuit-block {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 20px;
+    margin: 16px 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .circuit-block .label { color: var(--cyan); }
+  .circuit-block .value { color: var(--orange); }
+  .circuit-block .comment { color: var(--text-dim); }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+    position: relative;
+  }
+  .footer::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  }
+  .footer p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .footer .motto {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    color: var(--orange);
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+
+  /* === INTERACTIVE CHECKBOX JS === */
+  .total-display {
+    font-family: 'Orbitron', monospace;
+    text-align: center;
+    padding: 20px;
+    margin: 24px 0;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .total-display .total-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .total-display .total-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--orange);
+    text-shadow: 0 0 20px rgba(255,97,0,0.3);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DAEDALUS</h1>
+  <div class="subtitle">Gen 0 // Garage Build Plan</div>
+  <div class="tagline">// Build a scanning tunneling microscope. See atoms. In your bedroom. For less than a PS5. //</div>
+</div>
+
+<div class="container">
+
+<!-- ============================================ -->
+<!-- PHASE 0 BANNER -->
+<!-- ============================================ -->
+
+<div class="phase-banner">
+  <div class="phase-tag">Phase 0 &mdash; Active</div>
+  <h2>Can I See Atoms?</h2>
+  <div class="objective">Build an ambient-air scanning tunneling microscope capable of resolving the hexagonal carbon lattice on HOPG graphite. No vacuum. No cleanroom. Just a sharp tip, a piezo disc, and a steady hand.</div>
+  <div class="cost">$150 &ndash; $300</div>
+  <div class="gate">Image the 0.246nm hexagonal lattice of graphite. If you see it, the microscope works.</div>
+</div>
+
+<!-- ============================================ -->
+<!-- BILL OF MATERIALS -->
+<!-- ============================================ -->
+
+<div class="section-header">Bill of Materials</div>
+
+<!-- SCANNER -->
+<table class="bom-table">
+<thead>
+  <tr>
+    <th style="width:28%">Component</th>
+    <th style="width:18%">Part / Spec</th>
+    <th style="width:10%">Qty</th>
+    <th style="width:10%">Price</th>
+    <th style="width:16%">Supplier</th>
+    <th style="width:18%">Notes</th>
+  </tr>
+</thead>
+<tbody>
+  <!-- SCANNER SECTION -->
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-scanner">Scanner</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Piezo Buzzer Disc<br><span class="part-number">27mm PZT ceramic</span></td>
+    <td>27mm brass/PZT unimorph</td>
+    <td>5</td>
+    <td class="price">$3</td>
+    <td class="supplier">Amazon / AliExpress</td>
+    <td class="notes">Buy extras. Score top electrode into 4 quadrants with razor blade for XYZ control.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Piezo Disc (bare PZT)<br><span class="part-number">20-25mm, no brass</span></td>
+    <td>Bare PZT-5A ceramic disc</td>
+    <td>3</td>
+    <td class="price">$8</td>
+    <td class="supplier">Amazon / Steminc</td>
+    <td class="notes">Alternative scanner element. Higher deflection without brass constraint.</td>
+  </tr>
+
+  <!-- TIP SECTION -->
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-tip">Tip Fabrication</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Tungsten Wire<br><span class="part-number">0.25mm dia, 99.95%</span></td>
+    <td>W wire, 1m spool</td>
+    <td>1</td>
+    <td class="price">$15</td>
+    <td class="supplier">Amazon (SHOUCAN) / eBay</td>
+    <td class="notes">Enough for 50+ tips. Cut 10-15mm lengths for etching.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Sodium Hydroxide<br><span class="part-number">NaOH pellets, lab grade</span></td>
+    <td>500g container</td>
+    <td>1</td>
+    <td class="price">$8</td>
+    <td class="supplier">Amazon / hardware store (lye)</td>
+    <td class="notes">Mix to 2M solution: ~80g per liter of distilled water.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Stainless Steel Ring<br><span class="part-number">Cathode for etching</span></td>
+    <td>SS washer or wire loop, ~15mm</td>
+    <td>1</td>
+    <td class="price">$2</td>
+    <td class="supplier">Hardware store / junk drawer</td>
+    <td class="notes">Form a ring from SS wire or use a flat washer. Must be concentric around the W wire.</td>
+  </tr>
+
+  <!-- ELECTRONICS SECTION -->
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-electronics">Electronics &mdash; Amplifier</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Op-Amp (TIA)<br><span class="part-number">OPA124PA or AD549LH</span></td>
+    <td>Electrometer-grade FET input</td>
+    <td>2</td>
+    <td class="price">$30</td>
+    <td class="supplier">Digi-Key / Mouser</td>
+    <td class="notes">Buy 2 &mdash; one spare. Input bias &lt;1pA. This is the most critical component.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Feedback Resistor<br><span class="part-number">100M&Omega; 1% SMD or axial</span></td>
+    <td>100M&Omega; metal film</td>
+    <td>3</td>
+    <td class="price">$6</td>
+    <td class="supplier">Digi-Key / Mouser</td>
+    <td class="notes">Sets transimpedance gain. 1nA in &rarr; 100mV out. Keep leads SHORT. Guard ring on PCB.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Feedback Capacitor<br><span class="part-number">1-2pF COG/NPO</span></td>
+    <td>1.5pF ceramic COG</td>
+    <td>5</td>
+    <td class="price">$2</td>
+    <td class="supplier">Digi-Key</td>
+    <td class="notes">Across feedback resistor. Sets TIA bandwidth ~1kHz. Prevents oscillation.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Bypass Capacitors<br><span class="part-number">100nF + 10&micro;F</span></td>
+    <td>MLCC + electrolytic</td>
+    <td>10 ea</td>
+    <td class="price">$3</td>
+    <td class="supplier">Digi-Key / parts bin</td>
+    <td class="notes">Decouple every power pin. Keep layout tight.</td>
+  </tr>
+
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-electronics">Electronics &mdash; Controller</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Microcontroller<br><span class="part-number">Teensy 4.1</span></td>
+    <td>ARM Cortex-M7, 600MHz</td>
+    <td>1</td>
+    <td class="price">$32</td>
+    <td class="supplier">PJRC.com</td>
+    <td class="notes">USB to PC. Runs scan loop + Z feedback. Fast enough for delta-sigma oversampling.</td>
+  </tr>
+  <tr>
+    <td class="part-name">DAC (16-bit quad)<br><span class="part-number">DAC8814</span></td>
+    <td>Quad 16-bit current output</td>
+    <td>1</td>
+    <td class="price">$18</td>
+    <td class="supplier">Digi-Key / Mouser</td>
+    <td class="notes">4 channels: X, Y, Z, Bias. SPI interface to Teensy. Breakout board recommended.</td>
+  </tr>
+  <tr>
+    <td class="part-name">ADC (16-bit)<br><span class="part-number">LTC2326-16</span></td>
+    <td>16-bit SAR, 250ksps+</td>
+    <td>1</td>
+    <td class="price">$20</td>
+    <td class="supplier">Digi-Key / Mouser</td>
+    <td class="notes">Reads tunneling current from TIA. SPI interface. Delta-sigma oversampling &rarr; 20-bit effective.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Op-Amp (HV driver)<br><span class="part-number">OPA2227 or TL072</span></td>
+    <td>Dual precision op-amp</td>
+    <td>2</td>
+    <td class="price">$6</td>
+    <td class="supplier">Digi-Key / parts bin</td>
+    <td class="notes">Buffer DAC outputs to drive piezo. Gain stage: ~10-50x to reach &plusmn;50-200V scan range.</td>
+  </tr>
+
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-power">Power Supply</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Linear Regulators<br><span class="part-number">7815 / 7915 or LM317/337</span></td>
+    <td>&plusmn;15V for analog, +5V for digital</td>
+    <td>3</td>
+    <td class="price">$5</td>
+    <td class="supplier">Parts bin / Digi-Key</td>
+    <td class="notes">LINEAR not switching. Switching supply noise will kill your tunneling signal.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Transformer + Bridge<br><span class="part-number">18-0-18 VAC, 500mA</span></td>
+    <td>Center-tap transformer</td>
+    <td>1</td>
+    <td class="price">$12</td>
+    <td class="supplier">Digi-Key / Mouser / surplus</td>
+    <td class="notes">For &plusmn;15V linear supply. Or use a 3S LiPo battery for ultra-clean analog power (OpenSTM approach).</td>
+  </tr>
+  <tr>
+    <td class="part-name">3S LiPo Battery (alt)<br><span class="part-number">11.1V, 1000-2000mAh</span></td>
+    <td>RC LiPo pack</td>
+    <td>1</td>
+    <td class="price">$15</td>
+    <td class="supplier">Amazon / hobby shop</td>
+    <td class="notes">Optional: cleanest possible analog supply. No 60Hz ripple. Run analog section on battery, digital on USB.</td>
+  </tr>
+
+  <!-- APPROACH SECTION -->
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-approach">Coarse Approach</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Stepper Motor<br><span class="part-number">28BYJ-48 + ULN2003</span></td>
+    <td>5V geared stepper + driver</td>
+    <td>1</td>
+    <td class="price">$4</td>
+    <td class="supplier">Amazon / AliExpress</td>
+    <td class="notes">2048 steps/rev with half-stepping. Drives fine-pitch screw. TURN OFF after approach &mdash; heat causes drift.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Fine-Pitch Screw<br><span class="part-number">M3 &times; 0.5mm pitch, 30mm</span></td>
+    <td>Metric fine-thread screw</td>
+    <td>2</td>
+    <td class="price">$3</td>
+    <td class="supplier">Hardware store / McMaster-Carr</td>
+    <td class="notes">0.5mm pitch / 2048 steps = ~0.24&micro;m per step. Must be &lt; piezo Z range (~500nm).</td>
+  </tr>
+
+  <!-- SAMPLE SECTION -->
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-sample">Sample</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">HOPG Graphite<br><span class="part-number">ZYB grade, 12&times;12&times;2mm</span></td>
+    <td>Highly Ordered Pyrolytic Graphite</td>
+    <td>1</td>
+    <td class="price">$40</td>
+    <td class="supplier">Tips Nano / 2D Semiconductors / SPI Supplies</td>
+    <td class="notes">The "hello world" sample. Cleave with scotch tape before each scan. ZYB is best price/performance. ZYH cheapest.</td>
+  </tr>
+
+  <!-- VIBRATION ISOLATION SECTION -->
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-vibration">Vibration Isolation</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Granite Surface Plate<br><span class="part-number">12&times;12&times;2" or similar</span></td>
+    <td>Heavy flat surface</td>
+    <td>1</td>
+    <td class="price">$15</td>
+    <td class="supplier">Home Depot / surplus</td>
+    <td class="notes">Mass is your friend. Granite tile works. Heavier = better isolation. Even a thick steel plate works.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Viton O-Rings<br><span class="part-number">AS568 size -220 to -230</span></td>
+    <td>Fluoroelastomer dampers</td>
+    <td>8</td>
+    <td class="price">$5</td>
+    <td class="supplier">McMaster-Carr / Amazon</td>
+    <td class="notes">Stack between plates. Low Q-factor = good damping. Alternative: sorbothane pads.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Bungee Cord<br><span class="part-number">1/4" dia, 10-15ft</span></td>
+    <td>Elastic suspension</td>
+    <td>1</td>
+    <td class="price">$8</td>
+    <td class="supplier">Hardware store</td>
+    <td class="notes">Suspend the entire STM assembly from ceiling/frame. Longer cord = lower resonant frequency = better.</td>
+  </tr>
+
+  <!-- STRUCTURE SECTION -->
+  <tr>
+    <td colspan="6" style="padding:16px 14px 6px;border:none;">
+      <span class="category-tag cat-structure">Structure</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="part-name">Aluminum Stock<br><span class="part-number">6061-T6, various</span></td>
+    <td>Bar, plate, round stock</td>
+    <td>~2 lbs</td>
+    <td class="price">$15</td>
+    <td class="supplier">Metal supplier / scrap bin</td>
+    <td class="notes">CNC mill the body. Thermal mass helps stability. Or 3D print in PA-CF if no CNC available.</td>
+  </tr>
+  <tr>
+    <td class="part-name">PCB Prototyping<br><span class="part-number">Perfboard + headers</span></td>
+    <td>Solderable perfboard</td>
+    <td>2</td>
+    <td class="price">$5</td>
+    <td class="supplier">Amazon / parts bin</td>
+    <td class="notes">TIA circuit MUST be close to tip. Short traces. Guard rings around high-Z nodes. Consider deadbug style.</td>
+  </tr>
+  <tr>
+    <td class="part-name">Misc Hardware<br><span class="part-number">M3 screws, standoffs, wire</span></td>
+    <td>Fasteners, hookup wire, solder</td>
+    <td>assorted</td>
+    <td class="price">$10</td>
+    <td class="supplier">Parts bin / hardware store</td>
+    <td class="notes">Shielded cable for tip lead. Short as possible.</td>
+  </tr>
+</tbody>
+<tfoot>
+  <tr>
+    <td colspan="3" class="bom-subtotal" style="text-align:left; color: var(--text-dim); font-size:0.85rem;">
+      &mdash; Prices are estimates. Actual cost depends on what's already in your parts bin.
+    </td>
+    <td colspan="3" class="bom-subtotal">
+      EST. TOTAL: $155 &ndash; $280
+    </td>
+  </tr>
+</tfoot>
+</table>
+
+
+<!-- ============================================ -->
+<!-- TOOL CHECKLIST -->
+<!-- ============================================ -->
+
+<div class="section-header">Tool Checklist</div>
+<p style="color:var(--text-dim); margin-bottom:16px; font-size:0.9rem;">Click to check off what you've got. Dust 'em off.</p>
+
+<div class="tool-grid" id="toolGrid">
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Soldering Station</div>
+      <div class="tool-desc">Temperature-controlled. Fine tip for SMD if using SMD components.</div>
+      <div class="tool-status status-have">LIKELY HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Multimeter</div>
+      <div class="tool-desc">Basic DMM for continuity, voltage, resistance checks.</div>
+      <div class="tool-status status-have">LIKELY HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Oscilloscope</div>
+      <div class="tool-desc">ANY scope works. Needed to debug TIA output and check noise floor.</div>
+      <div class="tool-status status-need">IMPORTANT</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">DC Power Supply</div>
+      <div class="tool-desc">Bench supply for tip etching (3-8V) and circuit testing. Even batteries work.</div>
+      <div class="tool-status status-have">LIKELY HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Desktop CNC Mill</div>
+      <div class="tool-desc">For machining the STM body from 6061 aluminum. Your competitive advantage.</div>
+      <div class="tool-status status-have">CONFIRMED</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Sherline Lathe</div>
+      <div class="tool-desc">Turning parts, making tip holders, approach mechanism components.</div>
+      <div class="tool-status status-have">CONFIRMED</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Hacksaw / Bandsaw</div>
+      <div class="tool-desc">Cutting aluminum stock and tungsten wire to length.</div>
+      <div class="tool-status status-have">LIKELY HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Wire Cutters / Strippers</div>
+      <div class="tool-desc">Precision wire work. Flush cutters preferred.</div>
+      <div class="tool-status status-have">LIKELY HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Tweezers (fine tip)</div>
+      <div class="tool-desc">Handling tips, placing samples. Anti-magnetic preferred.</div>
+      <div class="tool-status status-need">PICK UP</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Magnifying Glass / Loupe</div>
+      <div class="tool-desc">Inspecting etched tips. 10x-20x magnification minimum.</div>
+      <div class="tool-status status-have">LIKELY HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">USB Microscope</div>
+      <div class="tool-desc">$20-40 digital microscope. Inspect tip quality after etching. Verify electrode scoring.</div>
+      <div class="tool-status status-nice">NICE TO HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Hot Glue Gun</div>
+      <div class="tool-desc">Securing piezo disc, cable management, quick structural fixes.</div>
+      <div class="tool-status status-have">LIKELY HAVE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Safety Glasses</div>
+      <div class="tool-desc">NaOH is caustic. Wear them during tip etching. Non-negotiable.</div>
+      <div class="tool-status status-have">NON-NEGOTIABLE</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Nitrile Gloves</div>
+      <div class="tool-desc">NaOH handling + keeping fingerprints off samples and metal parts.</div>
+      <div class="tool-status status-have">LIKELY HAVE (biolab)</div>
+    </div>
+  </div>
+
+  <div class="tool-card" onclick="toggleCheck(this)">
+    <div class="checkbox"></div>
+    <div class="tool-info">
+      <div class="tool-name">Scotch Tape</div>
+      <div class="tool-desc">Cleaving HOPG. Press tape to surface, peel to expose fresh atomic layer.</div>
+      <div class="tool-status status-have">DEFINITELY HAVE</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- CIRCUIT REFERENCE -->
+<!-- ============================================ -->
+
+<div class="section-header">Critical Circuit: Transimpedance Amplifier</div>
+<p style="color:var(--text); margin-bottom:12px;">This is the heart of the STM. It converts picoamp tunneling current into millivolt signals your ADC can read. Build this first and test it before anything else.</p>
+
+<div class="circuit-block">
+<span class="label">TRANSIMPEDANCE AMPLIFIER (TIA)</span>
+
+                 Rf = 100M&Omega;
+             ┌────/\/\/────┐
+             │    Cf=1.5pF │
+             │   ┌──||──┐  │
+  Tip ───────┤   │      │  │
+             │   │      │  ├──── V_out  &rarr;  ADC
+             └───┤-     │  │
+                 │  OPA124  │
+             ┌───┤+        │
+             │   └─────────┘
+  V_bias ────┘
+
+<span class="comment">// V_out = -I_tunnel &times; Rf</span>
+<span class="comment">// At I = 1nA:  V_out = -1nA &times; 100M&Omega; = -100mV</span>
+<span class="comment">// At I = 0.1nA: V_out = -10mV  (still readable at 16-bit)</span>
+<span class="comment">// Bandwidth: f_3dB = 1/(2&pi; &times; Rf &times; Cf) &asymp; 1.06 kHz</span>
+
+<span class="label">CRITICAL LAYOUT RULES:</span>
+<span class="value">1.</span> Keep Rf lead length &lt; 5mm. Stray capacitance kills bandwidth.
+<span class="value">2.</span> Guard ring around inverting input pin. Drive guard at V_out potential.
+<span class="value">3.</span> Shield the tip wire. Coax or twisted pair, short as possible.
+<span class="value">4.</span> Decouple V+ and V- pins with 100nF ceramic RIGHT AT the pins.
+<span class="value">5.</span> Analog ground separate from digital ground. Star-point connection.
+<span class="value">6.</span> NO switching power supplies near this circuit. Linear regulators only.
+<span class="value">7.</span> Deadbug construction on copper-clad board is BETTER than a PCB for this.
+
+<span class="label">TEST BEFORE ASSEMBLY:</span>
+<span class="comment">// Apply known voltage through 1G&Omega; resistor to inverting input.</span>
+<span class="comment">// 1V through 1G&Omega; = 1nA. Should read ~100mV at output.</span>
+<span class="comment">// If noise floor &lt; 10mV p-p, you're good to go.</span>
+</div>
+
+
+<!-- ============================================ -->
+<!-- BUILD SEQUENCE -->
+<!-- ============================================ -->
+
+<div class="section-header">Build Sequence</div>
+
+<div class="build-step">
+  <div class="step-number">Step 01</div>
+  <div class="time-est">Day 1-2</div>
+  <h3>Etch Your First Tips</h3>
+  <p>Cut 10-15mm lengths of 0.25mm tungsten wire. Mix 2M NaOH solution (80g per liter distilled water). Suspend wire vertically through stainless steel ring cathode submerged in solution. Apply 4-7V DC. Wait ~20 minutes. The wire necks and drops. The remaining stub is your tip.</p>
+  <p>Etch 10 tips minimum. Expect 6-7 good ones. Inspect under magnification &mdash; you want a smooth taper to a fine point. Store tips in a clean container.</p>
+  <div class="warning">NaOH is caustic. Gloves and glasses MANDATORY. Work near a water source. If it gets on skin, flush immediately with water for 15 minutes. This is not optional safety theater &mdash; concentrated NaOH causes chemical burns.</div>
+  <div class="tip-box">Pro tip from Dan Berard: 7.5V, 4M NaOH, 26&deg;C, 2mm immersion length gives 63.5% yield for tips under 10nm radius.</div>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 02</div>
+  <div class="time-est">Day 2-4</div>
+  <h3>Build the Transimpedance Amplifier</h3>
+  <p>This is the hardest electronics subsystem. Build it first, test it alone, prove it works before touching anything else. Deadbug construction on copper-clad board. OPA124 + 100M&Omega; feedback resistor + 1.5pF cap. Power with &plusmn;15V linear supply or 3S LiPo.</p>
+  <p>Test: apply 1V through a 1G&Omega; resistor to the inverting input. That's 1nA. You should read ~100mV at the output. Check noise floor on your scope &mdash; you want &lt;10mV peak-to-peak.</p>
+  <div class="tip-box">If you don't have a 1G&Omega; resistor for testing, two 500M&Omega; in series works. Or apply 0.1V through 100M&Omega; for the same 1nA test current.</div>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 03</div>
+  <div class="time-est">Day 3-5</div>
+  <h3>Build the DAC/ADC Interface</h3>
+  <p>Wire the DAC8814 and LTC2326-16 to the Teensy 4.1 via SPI. Write basic firmware: output a voltage on one DAC channel, read it back on the ADC. Verify linearity. Add the scan waveform generator &mdash; a simple raster pattern (sawtooth X, stepped Y) output on DAC channels.</p>
+  <p>Build the piezo driver: op-amp gain stage that takes 0-3.3V DAC output and amplifies to the range your piezo needs (&plusmn;50 to &plusmn;200V depending on scanner). Start with low voltage for testing.</p>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 04</div>
+  <div class="time-est">Day 4-7</div>
+  <h3>Machine the STM Body</h3>
+  <p>CNC mill the main body from 6061 aluminum. The design is simple: a rigid block that holds the piezo scanner (with tip) above a sample stage, with the coarse approach screw coming in from the side or below. Key requirements: mechanical rigidity, thermal mass, and a clear path from tip to sample with minimal overhang.</p>
+  <p>Refer to Dan Berard's design or MechRedPanda's 3D-printed version for geometry. Your CNC advantage: tighter tolerances = better stability = longer scan times.</p>
+  <div class="tip-box">The STM body should be as thermally massive as practical. Aluminum's high thermal conductivity means temperature changes propagate uniformly rather than creating differential expansion. A solid block with pockets milled out beats a skeletal frame.</div>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 05</div>
+  <div class="time-est">Day 5-7</div>
+  <h3>Prepare the Piezo Scanner</h3>
+  <p>Take a 27mm piezo buzzer disc. Score the top electrode into 4 equal quadrants using a razor blade and straightedge. Each quadrant becomes one axis control signal. Apply voltage to opposite quadrants for X or Y deflection. Apply to all four for Z (dome mode).</p>
+  <p>Mount the tip to the center of the disc using conductive epoxy or a tiny drop of solder. The tip should protrude 1-2mm below the disc plane.</p>
+  <p>Test: apply voltage to each quadrant pair and verify deflection using your USB microscope or a laser pointer reflection.</p>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 06</div>
+  <div class="time-est">Day 6-8</div>
+  <h3>Build the Coarse Approach</h3>
+  <p>Mount the 28BYJ-48 stepper to drive the M3&times;0.5 fine-pitch screw. The screw advances the STM head (or sample stage) toward the tip. Each half-step = 0.5mm / 2048 &asymp; 0.24&micro;m. The piezo Z range is ~500nm, so each step must be less than that. 0.24&micro;m = 240nm. Safe.</p>
+  <p>The approach algorithm: extend piezo Z fully, take one motor step, retract piezo fully, repeat. When tunneling current is detected during retract, stop motor. Z-feedback takes over.</p>
+  <div class="warning">TURN THE MOTOR OFF after approach is complete. Motor coil heat causes thermal drift that will wreck your scan. Mechanical friction or a set screw holds position after power-off.</div>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 07</div>
+  <div class="time-est">Day 7-9</div>
+  <h3>Build the Vibration Isolation Stack</h3>
+  <p>Layer 1: Heavy granite plate or steel plate on Viton O-rings or sorbothane pads, sitting on your workbench (away from CNC and lathe). Layer 2: STM assembly sits on the plate. Optional Layer 3: suspend the entire assembly from bungee cords attached to a frame or ceiling hook.</p>
+  <p>Scan at night when traffic, HVAC, and household activity are minimal. Your house's mechanical noise floor will be your limiting factor in Phase 0.</p>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 08</div>
+  <div class="time-est">Day 8-10</div>
+  <h3>Write the Scan Software</h3>
+  <p>Teensy firmware: Z-feedback PID loop (read tunneling current, adjust Z voltage to maintain constant current setpoint). Raster scan (step X, read Z, step X, read Z... increment Y, repeat). Stream data to PC over USB serial.</p>
+  <p>PC software: receive XY + Z data, render as grayscale image. Python + matplotlib is fine for first light. The image is a height map &mdash; bright = tip retracted (high feature), dark = tip extended (low feature).</p>
+  <div class="tip-box">Start with a very slow scan speed (minutes per image). Speed is not the goal &mdash; stability is. Once you have a stable image, you can optimize scan rate.</div>
+</div>
+
+<div class="build-step">
+  <div class="step-number">Step 09</div>
+  <div class="time-est">Day 9-12</div>
+  <h3>First Light</h3>
+  <p>Cleave your HOPG with scotch tape. Mount it on the sample stage. Install your best-looking etched tip. Set bias voltage to ~100mV. Set tunneling current setpoint to ~1nA. Power up the TIA. Start the coarse approach.</p>
+  <p>When tunneling current appears, the feedback loop takes over. Start a slow scan. Your first image will probably look like garbage &mdash; noise, drift, tip artifacts. That's normal. Iterate: try different tips, adjust PID gains, improve vibration isolation, scan slower.</p>
+  <p>When you see the hexagonal carbon lattice &mdash; 0.246nm spacing, six-fold symmetry &mdash; you have resolved individual atoms. In your bedroom. For less than $300.</p>
+  <div class="tip-box">HOPG is forgiving. If your first scan shows smooth terraces with atomic steps (0.335nm height), you're close. If you see periodic structure at the right spacing, you're there. Compare against published HOPG STM images to confirm.</div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- ROADMAP -->
+<!-- ============================================ -->
+
+<div class="section-header">The Road From Here</div>
+
+<div class="roadmap">
+  <div class="roadmap-node active">
+    <div class="node-phase cyan">Phase 0 &mdash; NOW</div>
+    <div class="node-title">See Atoms</div>
+    <div class="node-desc">Ambient STM on HOPG. Prove the concept. Build the skills. Make the YouTube video that launches a crowdfunding campaign.</div>
+    <div class="node-cost">$150 &ndash; $300</div>
+    <div class="node-gate">GATE: 0.246nm graphite lattice imaged</div>
+  </div>
+
+  <div class="roadmap-node">
+    <div class="node-phase cyan">Phase 1 &mdash; Clean Room Without a Room</div>
+    <div class="node-title">See Cleaner</div>
+    <div class="node-desc">Add vacuum (10^-6 torr). Used turbo pump + rotary vane from eBay/surplus. KF-flanged chamber. Image clean metal surfaces. Longer scans, less drift.</div>
+    <div class="node-cost">$2,000 &ndash; $3,500 additional</div>
+    <div class="node-gate">GATE: 10^-6 torr achieved, clean surface imaged in vacuum</div>
+  </div>
+
+  <div class="roadmap-node future">
+    <div class="node-phase orange">Phase 2 &mdash; The Boundary</div>
+    <div class="node-title">Touch Atoms</div>
+    <div class="node-desc">Push to UHV (10^-10 torr). Ion pump. ConFlat seals. Bakeout. Hydrogen-passivated silicon. See individual dangling bonds. The gateway to manipulation.</div>
+    <div class="node-cost">$3,000 &ndash; $6,000 additional</div>
+    <div class="node-gate">GATE: H-Si(100) surface imaged, individual DBs visible</div>
+  </div>
+
+  <div class="roadmap-node future">
+    <div class="node-phase orange">Phase 3 &mdash; Write Your Name in Atoms</div>
+    <div class="node-title">HDL: Hydrogen Desorption Lithography</div>
+    <div class="node-desc">Voltage-pulse removal of individual H atoms from passivated silicon. Build a hydrogen cracker. Flash-anneal samples. Write arbitrary patterns at atomic scale.</div>
+    <div class="node-cost">$1,000 &ndash; $3,000 additional</div>
+    <div class="node-gate">GATE: Single H atom removed by voltage pulse, DB confirmed by imaging</div>
+  </div>
+
+  <div class="roadmap-node future">
+    <div class="node-phase green">Phase 4 &mdash; The Bootstrap</div>
+    <div class="node-title">Probe Builds Probe</div>
+    <div class="node-desc">Use atomic-scale patterning to fabricate improved tips, sensors, actuators. Each generation of tools builds the next. Exponential capability growth. This is where the internet starts throwing money.</div>
+    <div class="node-cost">TBD &mdash; funded by crowdfunding + community</div>
+    <div class="node-gate">GATE: A structure built by the STM demonstrably improves the STM's own performance</div>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- REFERENCE BUILDS -->
+<!-- ============================================ -->
+
+<div class="section-header">Standing on Shoulders</div>
+
+<div class="build-step" style="border-left-color: var(--orange);">
+  <h3>Dan Berard &mdash; dberard.com</h3>
+  <p>The gold standard DIY STM. Atomic resolution on HOPG for ~$100. Teensy-based. Extensively documented with schematics, firmware, and build photos. Your primary reference for electronics and firmware design.</p>
+</div>
+
+<div class="build-step" style="border-left-color: var(--orange);">
+  <h3>OpenSTM &mdash; github.com/Dimsmary/OpenSTM</h3>
+  <p>Peer-reviewed open-source STM. ESP32-based. ~$300. Published in HardwareX journal. Battery-powered analog section. Good reference for clean power supply design.</p>
+</div>
+
+<div class="build-step" style="border-left-color: var(--orange);">
+  <h3>MechRedPanda &mdash; github.com/MechRedPanda/red-panda-stm</h3>
+  <p>3D-printed STM with atomic resolution (2024). Teensy 4.1. PA-CF printed structure. Featured on Hackaday. Proves that even plastic structures can achieve atomic imaging with proper design.</p>
+</div>
+
+<div class="build-step" style="border-left-color: var(--orange);">
+  <h3>John Alexander &mdash; john-alexander42.github.io</h3>
+  <p>The original sub-$100 STM design. Pioneered the unimorph disc scanner approach that all subsequent DIY STMs use. Historical reference &mdash; study the design philosophy.</p>
+</div>
+
+
+</div><!-- /container -->
+
+<div class="footer">
+  <div class="motto">// SMALL THINGS QUICKLY BECOME VERY BIG //</div>
+  <p>DAEDALUS PROJECT &mdash; Gen 0 Build Plan v0.1 &mdash; 2026-03-25</p>
+  <p>Built in a garage. Powered by Cherry Pepsi and AI. No PhDs required.</p>
+</div>
+
+<script>
+function toggleCheck(card) {
+  const cb = card.querySelector('.checkbox');
+  cb.classList.toggle('checked');
+}
+</script>
+
+</body>
+</html>
